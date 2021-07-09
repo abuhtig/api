@@ -49,8 +49,50 @@ CommentsSchema.statics = {
   getTotal: function (id) {
     return this.find({ cuid: id, isRead: '0', status: '1' }).countDocuments()
   },
-  getComment: function () {
-    
+  getMsgList: function (id, page, limit) {
+    return this.aggregate([
+      {
+        $lookup: {
+          from: 'posts',
+          let: { pid: {$toObjectId: "$tid"} },
+          pipeline: [
+            { $match: {$expr: {$eq: ['$_id', '$$pid']}} },
+            { $project: {_id: 1, uid: 1, title: 1} }
+          ],
+          as: 'post'
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects:[{ $arrayElemAt:['$post', 0]}, '$$ROOT']
+          }
+        }
+      },
+      { $addFields: { userId: {$toObjectId: "$uid"}}},
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'tuid'
+        }
+      },
+      {$unwind: '$tuid'},
+      // 添加objectid字段
+      { $addFields: { fuserId: {$toObjectId: "$cuid"}}},
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'fuserId',
+          foreignField: '_id',
+          as: 'fuid'
+        }
+      },
+      {$unwind: '$fuid'},
+      { $project: { post: 0, tuid: { username: 0,password: 0}, fuid: {username: 0,password: 0}, userId: 0, tid: 0, cuid: 0}},
+      {$match: {uid:id,status: "1", isRead: "0"}}
+    ]).skip(page * limit).limit(limit)
   }
 }
 

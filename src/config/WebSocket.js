@@ -12,7 +12,7 @@ class WebSocketServer {
 
     const finalConfig = { ...defaultConfig, ...config }
     this.wss = {}
-    this.interval = finalConfig.timeInterval
+    this.timeInterval = finalConfig.timeInterval
     this.isAuth = finalConfig.isAuth
     this.port = finalConfig.port
     this.options = config.options || {}
@@ -20,6 +20,8 @@ class WebSocketServer {
   // 初始化websocket服务
   init () {
     this.wss = new WebSocket.Server({ port: this.port, ...this.options })
+
+    this.heartbeat()
 
     // 连接信息
     this.wss.on('connection', (ws) => {

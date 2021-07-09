@@ -250,6 +250,10 @@ class UserController {
     const limit = 6
     const obj = await getJWTPayload(ctx.header.authorization)
     const result = await Comments.getMsgList(obj._id, page, limit)
+    ctx.body = {
+      code: 200,
+      data: result
+    }
   }
 }
 export default new UserController()
