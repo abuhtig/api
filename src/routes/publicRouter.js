@@ -15,5 +15,6 @@ router.get('/setEmail', userController.updateUsername)
 router.get('/setPass', userController.updateUserpass)
 router.get('/content/detail', listController.getPostDetail)
 router.get('/comments', commentsController.getComments)
+router.get('/getinfo', userController.getinfo)
 
 export default router

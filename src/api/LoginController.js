@@ -1,6 +1,6 @@
 import send from '../config/MailConfig'
 import moment from 'dayjs'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import jsonwebtoken from 'jsonwebtoken'
 import config from '../config'
 import { checkCode } from '../common/Utils'
@@ -68,7 +68,7 @@ class LoginController {
       //取到json数据
       const userObj = user.toJSON()
       //屏蔽掉不需要传给前端的数据,然后删除
-      const arr = ['password', 'username', 'roles']
+      const arr = ['password', 'username']
       arr.map((item) => {
         delete userObj[item]
       })

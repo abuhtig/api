@@ -8,7 +8,7 @@ import uuid from 'uuid/v4'
 import { getValue, setValue } from '../config/RedisConfig'
 import jwt from 'jsonwebtoken'
 import config from '../config/index'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import Comments from '../model/Comments'
 
 class UserController {
@@ -253,6 +253,21 @@ class UserController {
     ctx.body = {
       code: 200,
       data: result
+    }
+  }
+
+  async getinfo (ctx) {
+    const obj = await getJWTPayload(ctx.header.authorization)
+    const result = await User.findOne({ _id: obj._id})
+    const userObj = result.toJSON()
+    //屏蔽掉不需要传给前端的数据,然后删除
+    const arr = ['password', 'username']
+    arr.map((item) => {
+      delete userObj[item]
+    })
+    ctx.body = {
+      code: 200,
+      data: userObj
     }
   }
 }

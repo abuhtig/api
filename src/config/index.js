@@ -1,13 +1,13 @@
 import path from 'path'
-const DB_URL = 'mongodb://user:password@127.0.0.1:27017/testdb'
+const DB_URL = 'mongodb://test:password@120.48.21.232:27017/testdb'
 const REDIS = {
-  host: '127.0.0.1',
+  host: '120.48.21.232',
   port: 6379,
   password: '123456'
 }
 const JWT_SERCET = 'F&l8mWkDt$9a1lQBuaej9oJ2T35@u7ur69szx6smKJINzMbUYjHxiFd*1KxpJ8zH'
 
-const baseUrl = 'http://localhost:8082'
+const baseUrl = 'http://120.48.21.232:80'
 
 const uploadPath = process.env.NODE_ENV === 'production' ? '/app/public' : 
 path.join(path.resolve(__dirname), '../../public')
