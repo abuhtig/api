@@ -31,10 +31,20 @@ class ContentController {
     }
     
     const result = await Post.getList(options, sort, page, limit)
+    const total = await Post.countList(options)
     ctx.body = {
       code: 200,
       data: result,
-      msg: '获取文章列表成功'
+      msg: '获取文章列表成功',
+      total: total
+    }
+  }
+
+  async getTopList(ctx) {
+    const result = await Post.getTopList()
+    ctx.body = {
+      code: 200,
+      data: result
     }
   }
 
@@ -263,6 +273,23 @@ class ContentController {
       ctx.body = {
         code: 500,
         msg: '请求失败'
+      }
+    }
+  }
+
+  async deletepost(ctx) {
+    const params = ctx.query
+    const result = await Post.deleteOne({ _id: params.tid })
+    const result1 = await collect.deleteOne({ tid: params.tid})
+    if (result.ok === 1 && result1.ok === 1) {
+      ctx.body = {
+        code: 200,
+        msg: '删除成功'
+      }
+    } else {
+      ctx.body = {
+        code: 500,
+        msg: '删除失败'
       }
     }
   }

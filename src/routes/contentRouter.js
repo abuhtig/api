@@ -8,5 +8,6 @@ router.post('/upload', ContentController.uploadImg)
 router.post('/add', ContentController.addPost)
 router.post('/uploadWang', ContentController.uploadWangImg)
 router.post('/editpost', ContentController.editPost)
+router.get('/deletepost', ContentController.deletepost)
 
 export default router

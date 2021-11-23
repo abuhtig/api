@@ -50,11 +50,17 @@ PostSchema.statics = {
       select: 'name pic isVip _id'
     })
   },
+  getTopList: function () {
+    return this.find({isTop:"1"})
+  },
   getListByUid: function (id, page, limit) {
     return this.find({uid: id}).skip(page * limit).limit(limit).sort({created: -1})
   },
   countByUid: function (id) {
     return this.find({ uid: id }).countDocuments()
+  },
+  countList: function (option) {
+    return this.find(option).countDocuments()
   }
 }
 
