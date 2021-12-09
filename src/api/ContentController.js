@@ -1,5 +1,6 @@
 import Links from '../model/Links'
 import Post from '../model/Post'
+import Label from '../model/label'
 import fs from 'fs'
 import uuid from 'uuid/v4'
 import moment from 'dayjs';
@@ -9,6 +10,7 @@ import User from '../model/User'
 import { getJWTPayload } from '../common/Utils'
 import { checkCode } from '../common/Utils'
 import collect from '../model/Collect'
+import qs from 'qs'
 
 class ContentController {
   async getPostList (ctx) {
@@ -32,6 +34,27 @@ class ContentController {
     
     const result = await Post.getList(options, sort, page, limit)
     const total = await Post.countList(options)
+    ctx.body = {
+      code: 200,
+      data: result,
+      msg: '获取文章列表成功',
+      total: total
+    }
+  }
+  async getPostListadm (ctx) {
+    const params = ctx.query
+    let body = qs.parse(params)
+    // const sort = body.sort ? body.sort : 'created'
+    const page = body.page ? parseInt(body.page) : 0
+    const limit = body.limit ? parseInt(body.limit) : 20
+    const op = body.option || {}
+    let option = qs.parse(op)
+    if (option.search === 'name') {
+      const user = await User.getUser(option)
+      option.item = user.map(o => o._id)
+    }
+    const result = await Post.getListadm(option, page, limit)
+    const total = await Post.countList(option)
     ctx.body = {
       code: 200,
       data: result,
@@ -211,6 +234,24 @@ class ContentController {
     }
   }
 
+  async editPostbyId (ctx) {
+    const { body } = ctx.request
+    const result = await Post.updateOne({ _id: body._id }, body)
+    if (result.ok === 1) {
+      ctx.body = {
+        code: 200,
+        data: result,
+        msg: '更新帖子成功'
+      }
+      } else {
+        ctx.body = {
+          code: 500,
+          data: result,
+          msg: '更新帖子失败'
+        }       
+      }
+  }
+
   async getPostListByUid (ctx) {
     const params = ctx.query
     const obj = await getJWTPayload(ctx.header.authorization)
@@ -292,6 +333,68 @@ class ContentController {
         msg: '删除失败'
       }
     }
+  }
+
+  async getLabel (ctx) {
+    const params = ctx.query
+    const body = qs.parse(params)
+    const sort = body.sort ? body.sort : 'created'
+    const page = body.page ? parseInt(body.page) : 0
+    const limit = body.limit ? parseInt(body.limit) : 10
+    const option = body.option || {}
+    const result = await Label.getLabel(sort, page, limit, option)
+    const total = await Label.countList(option)
+    ctx.body = {
+      code: 200,
+      data: result,
+      msg: '获取文章列表成功',
+      total: total
+    }
+  }
+
+  async addLabel(ctx) {
+    const { body } = ctx.request
+    const newPost = new Label(body)
+    const result = await newPost.save()
+    ctx.body = {
+      code: 200,
+      data: result,
+      msg: '新增成功'
+    }
+  }
+
+  async deleteLabel(ctx) {
+    const params = ctx.query
+    const result = await Label.deleteOne({ _id: params._id })
+    if (result.ok === 1) {
+      ctx.body = {
+        code: 200,
+        msg: '删除成功'
+      }
+    } else {
+      ctx.body = {
+        code: 500,
+        msg: '删除失败'
+      }
+    }
+  }
+
+  async editLabel(ctx) {
+    const { body } = ctx.request
+    const result = await Label.updateOne({ _id: body._id }, body)
+    if (result.ok === 1) {
+      ctx.body = {
+        code: 200,
+        data: result,
+        msg: '更新帖子成功'
+      }
+      } else {
+        ctx.body = {
+          code: 500,
+          data: result,
+          msg: '更新帖子失败'
+        }       
+      }
   }
 }
 

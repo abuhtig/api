@@ -71,10 +71,17 @@ class CommentsController {
       return
     }
     const { body } = ctx.request
+    const post = await PostModel.findOne({ _id: body.tid })
+    if (post.status === 1) {
+      ctx.body = {
+        code: 500,
+        msg: '评论失败,此贴禁止评论'
+      }
+      return
+    }
     const newComment = new Comments(body)
     const obj = await getJWTPayload(ctx.header.authorization)
     newComment.cuid = obj._id
-    const post = await PostModel.findOne({ _id: body.tid })
     newComment.uid = post.uid
     const comment = await newComment.save()
     const num = await Comments.getTotal(post.uid)

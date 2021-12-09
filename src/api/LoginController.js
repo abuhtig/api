@@ -8,6 +8,7 @@ import User from '../model/User'
 import SignRecord from '../model/SignRecord'
 import uuid from 'uuid/v4';
 import { setValue } from '../config/RedisConfig'
+import { resolve } from 'bluebird'
 
 class LoginController {
   async forget(ctx) {
@@ -61,7 +62,7 @@ class LoginController {
   if (result) {
     let checkUserPasswd = false
     let user = await User.findOne({username: body.username})
-    if (bcrypt.compare(body.password, user.password)) {
+    if (await bcrypt.compare(body.password, user.password)) {
       checkUserPasswd = true
     }
     if (checkUserPasswd) {

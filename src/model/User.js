@@ -13,7 +13,7 @@ created: {type: Date },
 //)	注册时间
 updated:	{type: Date },
 //)	更新时间
-favs:	{type: Number, default: 0 },
+favs:	{type: Number, default: 10 },
 //100	用户积分
 gender:	{type: String },
 //	默认，0-男， 1-女
@@ -56,10 +56,55 @@ UserSchema.post('save', function(error, doc, next) {
 UserSchema.statics = {
   findByID: function (id) {
     return this.findOne({_id: id},{
-      password: 0,
+      updated: 0,
       username: 0,
-      mobile: 0
+      gender: 0
     })
+  },
+  getList: function (page, limit, option) {
+    let query = {}
+    if (typeof option.item !== 'undefined' && option.item.trim() !== '') {
+      if (option.search === 'created') {
+        const start = option.item[0]
+        const end = option.item[1]
+        query = { created: { $gte: new Date(start), $lt: new Date(end) }}
+      } else if (option.search === 'roles') {
+        query = { roles: { $in: option.item } }
+      } else if (['name', 'username'].includes(option.search)) {
+        query[option.search] = {$regex: new RegExp(option.item)}
+      } else {
+        query[option.search] = option.item
+      }
+    }
+
+    return this.find(query,{
+      password: 0,
+      pic: 0,
+      count: 0,
+      regmark: 0
+    }).skip(page * limit)
+    .limit(limit)
+  },
+  getListCount: function (option) {
+    let query = {}
+    if (typeof option.item !== 'undefined' && option.item.trim() !== '') {
+      if (option.search === 'created') {
+        const start = option.item[0]
+        const end = option.item[1]
+        query = { created: { $gte: new Date(start), $lt: new Date(end) }}
+      } else if (option.search === 'roles') {
+        query = { roles: { $in: option.item } }
+      } else if (['name', 'username'].includes(option.search)) {
+        query[option.search] = {$regex: new RegExp(option.item)}
+      } else {
+        query[option.search] = option.item
+      }
+    }
+    return this.find(query).countDocuments()
+  },
+
+  getUser: function (option) {
+    return this.find({name: {$regex: new RegExp(option.item)}}, {_id: 1})
   }
 }
 const UserModel = mongoose.model('users', UserSchema)

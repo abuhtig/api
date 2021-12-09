@@ -5,7 +5,6 @@ class PublicController {
   constructor() {}
   async getCaptcha(ctx) {
     const body = ctx.request.query
-    console.log(body.sid)
     const newCaptca = svgCaptcha.create({
       size: 4,
       ignoreChars: '0o1il',
@@ -13,7 +12,6 @@ class PublicController {
       noise: Math.floor(Math.random() * 5),
       width: 150
     })
-    // console.log(newCaptca)
     setValue(body.sid, newCaptca.text, 600)
     ctx.body = {
       code: 200,

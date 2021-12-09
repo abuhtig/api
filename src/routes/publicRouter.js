@@ -7,6 +7,7 @@ const router = new Router()
 
 router.prefix('/public')
 router.get('/list', listController.getPostList)
+router.get('/adlist', listController.getPostListadm)
 router.get('/topList', listController.getTopList)
 router.get('/getCaptcha', publicController.getCaptcha)
 router.get('/tips', listController.getTips)
@@ -17,5 +18,6 @@ router.get('/setPass', userController.updateUserpass)
 router.get('/content/detail', listController.getPostDetail)
 router.get('/comments', commentsController.getComments)
 router.get('/getinfo', userController.getinfo)
+router.get('/getlabel', listController.getLabel)
 
 export default router

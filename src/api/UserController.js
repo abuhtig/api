@@ -270,5 +270,114 @@ class UserController {
       data: userObj
     }
   }
+
+  async getUserList (ctx) {
+    const {body} = ctx.request
+    const page = body.page ? parseInt(body.page) : 0
+    const limit = body.limit ? parseInt(body.limit) : 10
+    const option = body.option || {}
+    const users = await User.getList(page, limit, option)
+    const total = await User.getListCount(option)
+    ctx.body = {
+      code: 200,
+      data: users,
+      total: total
+    }
+  }
+  // deleteUser&editUser管理员操作
+  async editUser (ctx) {
+    const { body } = ctx.request
+    const user = await User.findOne({ _id: body._id })
+    if (user) {
+      if (body.password) {
+        body.password = await bcrypt.hash(body.password, 5)
+      } else {
+        delete body.password
+      }
+      const result = await User.updateOne({ _id: body._id }, body)
+      if ( result.n === 1 && result.ok === 1 ) {
+        ctx.body = {
+          code: 200,
+          msg: '更新成功'
+        }
+      } else {
+        ctx.body = {
+          code: 500,
+          msg: '更新失败'
+        }
+      }
+    }
+  }
+
+  async batchUpdateUser (ctx) {
+    const { body } = ctx.request
+    const result = await User.updateMany({_id: { $in: body.ids }}, { $set: {...body.set} })
+    if (result.ok === 1) {
+      ctx.body = {
+        code: 200,
+        data: result
+      }
+    }
+  }
+
+  async deleteUser (ctx) {
+    const { body } = ctx.request
+    const result = await User.deleteMany({ _id: { $in: body } })
+    if (result.ok === 1) {
+      ctx.body = {
+        code: 200,
+        msg: '删除成功!'
+      }   
+    } else {
+      ctx.body = {
+        code: 500,
+        msg: '删除失败!'
+      }   
+    }
+  }
+
+  async checkName (ctx) {
+    const params = ctx.query
+    const user = await User.findOne({ name: params.name })
+    if (user) {
+      ctx.body = {
+        code: 500,
+        msg: '昵称重复!'
+      }  
+    } else {
+      ctx.body = {
+        code: 200,
+        msg: '昵称有效!'
+      }
+    }
+  }
+
+  async checkUsername (ctx) {
+    const params = ctx.query
+    const user = await User.findOne({ username: params.username })
+    if (user) {
+      ctx.body = {
+        code: 500,
+        msg: '邮箱重复!'
+      }  
+    } else {
+      ctx.body = {
+        code: 200,
+        msg: '邮箱有效!'
+      }
+    }
+  }
+
+  async addUser (ctx) {
+    const { body } = ctx.request
+    body.password = await bcrypt.hash(body.password, 5)
+    const user = new User(body)
+    const result =await user.save()
+    ctx.body = {
+      code: 200,
+      msg: '新增用户成功',
+      data: result
+    }
+  }
 }
 export default new UserController()
