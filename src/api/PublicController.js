@@ -1,4 +1,5 @@
 import svgCaptcha from 'svg-captcha'
+import Label from '../model/label'
 import { setValue, getHValue, getValue } from '../config/RedisConfig'
 
 class PublicController {
@@ -16,6 +17,14 @@ class PublicController {
     ctx.body = {
       code: 200,
       data: newCaptca.data,
+    }
+  }
+  async getLabels (ctx) {
+    const result = await Label.find({})
+    ctx.body = {
+      code: 200,
+      data: result,
+      msg: '获取文章标签成功'
     }
   }
 }

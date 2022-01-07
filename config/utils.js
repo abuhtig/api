@@ -16,5 +16,6 @@ exports.getWebpackResolveConfig = function (customAlias = {}) {
       '@': appPath,
       ...customAlias,
     },
-  };
-};
+  }
+}
+

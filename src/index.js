@@ -12,6 +12,9 @@ import compress from 'koa-compress'
 import config from './config/index'
 import errorHandle from './common/ErrorHandle'
 import WebSocketServer from './config/WebSocket'
+import Auth from './common/auth'
+import init from './common/init'
+import log4js from './config/Log4'
 
 const app = new koa()
 const ws = new WebSocketServer()
@@ -40,7 +43,13 @@ const middleware = compose([
   jsonutil({ pretty: false, param: 'pretty' }),
   helmet(),
   jwt,
-  errorHandle
+  Auth,
+  errorHandle,
+  isDevMode ? log4js.koaLogger(log4js.getLogger('http'),{
+    level: 'auto'
+  }) : log4js.koaLogger(log4js.getLogger('access'),{
+    level: 'auto'
+  })
 ])
 
 if (!isDevMode) {
@@ -50,4 +59,7 @@ if (!isDevMode) {
 app.use(middleware)
 app.use(router())
 
-app.listen(3000)
+app.listen(3000, () => {
+  console.log('app is runing at 3000')
+  init()
+})

@@ -19,5 +19,6 @@ router.get('/content/detail', listController.getPostDetail)
 router.get('/comments', commentsController.getComments)
 router.get('/getinfo', userController.getinfo)
 router.get('/getlabel', listController.getLabel)
+router.get('/getLabels', publicController.getLabels)
 
 export default router

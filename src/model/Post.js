@@ -34,6 +34,9 @@ PostSchema.statics = {
       select: 'name isVip pic'
     })
   },
+  getListCount: function (options) {
+    return this.find (options).countDocuments()
+  },
   getListadm: function (option, page, limit) {
     let query = {}
     if (typeof option.item !== 'undefined' && option.item !== '') {
@@ -60,6 +63,7 @@ PostSchema.statics = {
       path: 'uid',
       select: 'name isVip pic'
     })
+    .sort({created: -1})
   },
   getTopWeek: function () {
     return this.find({

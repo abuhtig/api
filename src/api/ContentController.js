@@ -31,9 +31,11 @@ class ContentController {
     if (typeof body.tag !== 'undefined' && body.tag !== '') {
       options.tags ={ $elemMatch: {name: body.tag } }
     }
-    
+    if (typeof body.search !== 'undefined' && body.search !== '') {
+      options['content'] = {$regex: new RegExp(body.search)}
+    }
     const result = await Post.getList(options, sort, page, limit)
-    const total = await Post.countList(options)
+    const total = await Post.getListCount(options)
     ctx.body = {
       code: 200,
       data: result,
@@ -334,6 +336,33 @@ class ContentController {
       }
     }
   }
+  async deleteposts(ctx) {
+    const { body } = ctx.request
+    const result = await Post.deleteMany({ _id: { $in: body } })
+    const result1 = await collect.deleteMany({ tid: { $in: body } })
+    if (result.ok === 1 && result1.ok === 1) {
+      ctx.body = {
+        code: 200,
+        msg: '删除成功'
+      }
+    } else {
+      ctx.body = {
+        code: 500,
+        msg: '删除失败'
+      }
+    }
+  }
+
+  async batchUpdatePosts (ctx) {
+    const { body } = ctx.request
+    const result = await Post.updateMany({_id: { $in: body.ids }}, { $set: {...body.set} })
+    if (result.ok === 1) {
+      ctx.body = {
+        code: 200,
+        data: result
+      }
+    }
+  }
 
   async getLabel (ctx) {
     const params = ctx.query
@@ -366,7 +395,9 @@ class ContentController {
   async deleteLabel(ctx) {
     const params = ctx.query
     const result = await Label.deleteOne({ _id: params._id })
-    if (result.ok === 1) {
+    // 将文章评论一起删除
+    const result1 = await collect.deleteOne({ tid: params._id})
+    if (result.ok === 1 && result1.ok === 1) {
       ctx.body = {
         code: 200,
         msg: '删除成功'

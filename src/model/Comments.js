@@ -43,11 +43,49 @@ CommentsSchema.statics = {
       select: '_id uid status'
     }).skip(page * limit).limit(limit)
   },
+  getList: function (page, limit, option) {
+    let query = {}
+    let query2 = {}
+    let query3 = {}
+    if (typeof option.item !== 'undefined' && option.item.trim() !== '') {
+      if (option.search === 'created') {
+        const start = option.item[0]
+        const end = option.item[1]
+        query = { created: { $gte: new Date(start), $lt: new Date(end) }}
+      } else if (option.search === 'status') {
+        query = { status: { $eq: option.item } }
+      } else if (option.search === 'isRead') {
+        query = { isRead: { $eq: option.item } }
+      } else if (option.search === 'isBest') {
+        query = { isBest: { $eq: option.item } }
+      } else if (option.search === 'content') {
+        query[option.search] = {$regex: new RegExp(option.item)}
+      } else if (option.search === 'title') {
+        query2[option.search] = {$regex: new RegExp(option.item)}
+      } else if (option.search === 'user') {
+        query3[option.search] = {$regex: new RegExp(option.item)}
+      } else {
+        query[option.search] = option.item
+      }
+    }
+    return this.find(query).populate({
+      path: 'cuid',
+      select: '_id name',
+      match: query3
+    }).populate({
+      path: 'tid',
+      select: '_id title',
+      match: query2
+    }).skip(page * limit).limit(limit)
+  },
   queryCont: function (id) {
     return this.find({ tid: id }).countDocuments()
   },
   getTotal: function (id) {
     return this.find({ cuid: id, isRead: '0', status: '1' }).countDocuments()
+  },
+  getTotalAll: function () {
+    return this.find({ isRead: '0', status: '1' }).countDocuments()
   },
   getMsgList: function (id, page, limit) {
     return this.aggregate([

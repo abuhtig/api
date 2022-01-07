@@ -17,7 +17,7 @@ favs:	{type: Number, default: 10 },
 //100	用户积分
 gender:	{type: String },
 //	默认，0-男， 1-女
-roles: {type: Array, default:['user'] },
+roles: {type: String, default: 'user' },
 //user	角色, user-普通用户，admin-管理员, super_admin超级管理员
 pic: {type: String, default:'/img/touxiang.jpeg' },
 //	用户的头像
