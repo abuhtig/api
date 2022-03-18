@@ -7,15 +7,18 @@ const REDIS = {
 }
 const JWT_SERCET = 'F&l8mWkDt$9a1lQBuaej9oJ2T35@u7ur69szx6smKJINzMbUYjHxiFd*1KxpJ8zH'
 
-const baseUrl = 'http://120.48.21.232:80'
+const baseUrl = 'https://www.toped.top'
 
-const uploadPath = process.env.NODE_ENV === 'production' ? '/app/public' : 
+const uploadPath = process.env.NODE_ENV === 'production' ? 'public' : 
 path.join(path.resolve(__dirname), '../../public')
-
 
 const adminEmail = ['378091429@qq.com']
 
-const publicPath = [/^\/public/, /\/login/]
+const publicPath = [/^\/public/, /\/login/,/^\/content/]
+
+const AppId = 'wx45c9da8b092c8330'
+
+const AppSecret = '8dad43e742ce7fec101bb1df8651cd7c'
 
 export default {
   DB_URL,
@@ -24,5 +27,7 @@ export default {
   baseUrl,
   uploadPath,
   adminEmail,
-  publicPath
+  publicPath,
+  AppId,
+  AppSecret
 }

@@ -11,6 +11,7 @@ import { getJWTPayload } from '../common/Utils'
 import { checkCode } from '../common/Utils'
 import collect from '../model/Collect'
 import qs from 'qs'
+import Records from '../model/records'
 
 class ContentController {
   async getPostList (ctx) {
@@ -32,7 +33,8 @@ class ContentController {
       options.tags ={ $elemMatch: {name: body.tag } }
     }
     if (typeof body.search !== 'undefined' && body.search !== '') {
-      options['content'] = {$regex: new RegExp(body.search)}
+      // options['content'] = {$regex: new RegExp(body.search)}
+      options['title'] = {$regex: new RegExp(body.search)}
     }
     const result = await Post.getList(options, sort, page, limit)
     const total = await Post.getListCount(options)
@@ -114,8 +116,10 @@ class ContentController {
       let str = user.pic
       const link = config.uploadPath + str.substr(21)
       fs.unlink(link, (err) => {
-        if (err) throw err
-        console.log(link + 'was deleted')
+        if (err) {
+          console.log(link + 'was deleted')
+          return
+        }
       })
     }
     ctx.body = {
@@ -144,6 +148,13 @@ class ContentController {
   }
   async addPost (ctx) {
     const { body } = ctx.request
+    if (body.tags.length > 5) {
+      ctx.body = {
+        code: 403,
+        msg: '标签数量过多!'
+      }
+      return
+    }
     const sid = body.sid
     const code = body.code
     const result =await checkCode(sid, code)
@@ -163,7 +174,8 @@ class ContentController {
         const result = await newPost.save()
         ctx.body = {
           code: 200,
-          msg: '发帖成功'
+          msg: '发帖成功',
+          id: result._id
         }
       }
     } else {
@@ -178,7 +190,7 @@ class ContentController {
     const params = ctx.query
     if (!params.tid) {
       ctx.body = {
-        code: 500,
+        code: 403,
         msg: '文章标题为空'
       }
       return
@@ -198,6 +210,31 @@ class ContentController {
       const userCollect = await collect.findOne({ uid: obj._id, tid: params.tid})
       if (userCollect && userCollect.tid) {
         isCollect = true
+      }
+      const recordsObj = {
+        records: [
+          {
+            tid: params.tid,
+            title: post.title
+          }
+        ],
+        cuid: obj._id,
+      }
+      const user =await Records.findOne({cuid: obj._id})
+      if (user) {
+        const recordsArray = user.records.filter((x) => {
+          return x.tid !== params.tid
+        })
+        const created = moment().format('YYYY-MM-DD HH:mm:ss')
+        recordsArray.unshift({
+          tid: params.tid,
+          title: post.title,
+          created: created
+        })
+        const result =await Records.updateOne({ cuid: obj._id }, { records:recordsArray })
+      } else {
+        const record = new Records(recordsObj)
+        const result = await record.save()
       }
     }
     const newPost = post.toJSON()
@@ -239,7 +276,7 @@ class ContentController {
   async editPostbyId (ctx) {
     const { body } = ctx.request
     const result = await Post.updateOne({ _id: body._id }, body)
-    if (result.ok === 1) {
+    if (result.ok === 1, result.nModified === 1) {
       ctx.body = {
         code: 200,
         data: result,
@@ -426,6 +463,55 @@ class ContentController {
           msg: '更新帖子失败'
         }       
       }
+  }
+
+  async getHistory(ctx) {
+    const params = ctx.query
+    const headers = ctx.header.authorization
+    if (typeof headers !== 'undefined') {
+      const obj = await getJWTPayload(headers)
+      const result = await Records.findOne({cuid: obj._id})
+      const total = result.records.length
+      result.records = result.records.slice(params.page, params.page + 10)
+      ctx.body = {
+        code: 200,
+        data: result,
+        msg: '查询成功',
+        total
+      }
+    } else {
+      ctx.body = {
+        code: 400,
+        msg: '查询失败'
+      }
+    }
+  }
+
+  async deleteHistory(ctx) {
+    const params = ctx.query
+    const headers = ctx.header.authorization
+    if (typeof headers !== 'undefined') {
+      const obj = await getJWTPayload(headers)
+      const result = await Records.findOne({cuid: obj._id})
+      const index = ''
+      result.records.forEach((x, i, a) => {
+        if (x._id === params._id) {
+          index = i
+        }
+      })
+      result.records.splice(index, 1)
+      const result1 = await Records.updateOne({cuid: obj._id},{records: result.records})
+      ctx.body = {
+        code: 200,
+        data: result1,
+        msg: '删除成功'
+      }
+    } else {
+      ctx.body = {
+        code: 400,
+        msg: '删除失败'
+      }
+    }
   }
 }
 

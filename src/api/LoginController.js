@@ -3,12 +3,12 @@ import moment from 'dayjs'
 import bcrypt from 'bcryptjs'
 import jsonwebtoken from 'jsonwebtoken'
 import config from '../config'
-import { checkCode } from '../common/Utils'
+import { checkCode, generateToken } from '../common/Utils'
 import User from '../model/User'
 import SignRecord from '../model/SignRecord'
 import uuid from 'uuid/v4';
 import { setValue } from '../config/RedisConfig'
-import { resolve } from 'bluebird'
+import { wxGetUserInfo } from '../common/WxUtils'
 
 class LoginController {
   async forget(ctx) {
@@ -149,6 +149,26 @@ class LoginController {
     ctx.body = {
       code: 500,
       msg: msg
+    }
+  }
+
+  async wxLogin (ctx) {
+    const { body } = ctx.request
+    let user = ''
+    if (body.code) {
+      const wxUserInfo = await wxGetUserInfo(body.code, body.user)
+      user = await User.findOrCreatedByOpenData(wxUserInfo)
+      ctx.body = {
+        code: 200,
+        msg: '成功',
+        token: generateToken({ _id: user._id}),
+        data: user
+      }
+    } else {
+      ctx.body = {
+        code: 500,
+        msg: 'code不存在'
+      }
     }
   }
 }

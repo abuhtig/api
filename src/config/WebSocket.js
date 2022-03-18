@@ -18,8 +18,12 @@ class WebSocketServer {
     this.options = config.options || {}
   }
   // 初始化websocket服务
-  init () {
-    this.wss = new WebSocket.Server({ port: this.port, ...this.options })
+  init (app) {
+    if (app) {
+      this.wss = new WebSocket.Server({ server: app, ...this.options })
+    } else {
+      this.wss = new WebSocket.Server({ port: this.port, ...this.options })
+    }
 
     this.heartbeat()
 

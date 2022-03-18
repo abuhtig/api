@@ -5,6 +5,16 @@ import jwt from 'jsonwebtoken'
 const getJWTPayload = token => {
   return jwt.verify(token.split(' ')[1], config.JWT_SERCET)
 }
+
+const generateToken = (payload) => {
+  if (payload) {
+    return jwt.sign({
+      ...payload
+    }, config.JWT_SERCET, { expiresIn: '7d' })
+  } else {
+    throw new Error('生成token失败!')
+  }
+}
 const checkCode = async (key, value) => {
   const redisData = await getValue(key)
   if (redisData != null) {
@@ -71,10 +81,24 @@ const getRights = (tree, menus) => {
     }
     return arr.flat(Infinity)
 }
+const rand = () => {
+  const str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyz0123456789'
+  let text = ''
+  for (let index = 0; index < 9; index++) {
+    text += str.charAt(Math.floor(math.random()))
+  }
+  return text
+}
+
+const getTempName = () => {
+  return 'temp_' + rand() + '@js.com'
+}
 export{
   checkCode,
   getJWTPayload,
   getMenuData,
   sortObj,
-  getRights
+  getRights,
+  getTempName,
+  generateToken
 }

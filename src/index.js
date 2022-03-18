@@ -15,13 +15,34 @@ import WebSocketServer from './config/WebSocket'
 import Auth from './common/auth'
 import init from './common/init'
 import log4js from './config/Log4'
-
-const app = new koa()
-const ws = new WebSocketServer()
-ws.init()
-global.ws = ws
-
+import https from 'https'
+import fs from 'fs'
 const isDevMode = process.env.NODE_ENV === 'production' ? false : true
+const app = new koa()
+
+const httpsOption = {
+  key: fs.readFileSync(path.join(__dirname, './cert/7396045_www.toped.top.key'), 'utf8'),
+  cert: fs.readFileSync(path.join(__dirname, './cert/7396045_www.toped.top.pem'), 'utf8')
+}
+
+const server = https.createServer(httpsOption, app.callback())
+server.listen(444)
+
+const server2 = ''
+if (!isDevMode) {
+  const httpsOption2 = {
+    key: fs.readFileSync(path.join(__dirname, './cert/7403365_www.toped.top.key'), 'utf8'),
+    cert: fs.readFileSync(path.join(__dirname, './cert/7403365_www.toped.top.pem'), 'utf8')
+  }
+  const server2 = https.createServer(
+    httpsOption2, 
+    app.callback()
+  ).listen(3001)
+}
+
+const ws = new WebSocketServer()
+ws.init(server2)
+global.ws = ws
 
 const jwt = JWT({ secret: config.JWT_SERCET }).unless({ path: [/^\/public/, /\/login/]})
 /**
@@ -63,3 +84,5 @@ app.listen(3000, () => {
   console.log('app is runing at 3000')
   init()
 })
+
+export default server

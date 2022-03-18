@@ -15,7 +15,8 @@ const PostSchema = new Schema({
   status: { type: String, default: '0'  },
   isTop: { type: String, default: '0'  },
   sort: { type: String, default: 100  },
-  tags: { type: Array, ref: 'label' }
+  tags: { type: Array, ref: 'label' },
+  pic: { type: String, default: ''}
 })
 
 PostSchema.pre('save', function (next) {
@@ -71,9 +72,8 @@ PostSchema.statics = {
         $gte: moment().subtract(7, 'days')
       }
     },{
-      answer: 1,
       title: 1
-    }).sort({ answer: -1}).limit(15)
+    }).sort({ answer: -1}).limit(7)
   },
   findByTid: function (id) {
     return this.findOne({ _id: id }).populate({

@@ -5,7 +5,7 @@ import AdminController from '../api/AdminController'
 export default async (ctx, next) => {
   const headers = ctx.header.authorization
   if (typeof headers !== 'undefined') {
-    const obj = await getJWTPayload(ctx.header.authorization)
+    const obj = await getJWTPayload(headers)
     if (obj._id) {
       ctx._id = obj._id
       const admins = JSON.parse(await getValue('admin'))
@@ -26,6 +26,7 @@ export default async (ctx, next) => {
   const operations = await AdminController.getOperations(ctx)
   if (operations && operations.includes(ctx.url)) {
     await next()
+    return
   } else {
     ctx.throw(401)
   }

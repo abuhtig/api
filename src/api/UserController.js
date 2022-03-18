@@ -104,6 +104,13 @@ class UserController {
 
   async updateUserInfo (ctx) {
     const { body } = ctx.request
+    if (body.regmark.length > 20 ) {
+      ctx.body = {
+        code: 500,
+        msg: '更新失败,标签名过长!'
+      }
+      return
+    }
     const obj = await getJWTPayload(ctx.header.authorization)
     const user = await User.findOne({ _id: obj._id})
     let msg = ''
@@ -138,7 +145,7 @@ class UserController {
     const arr = ['username', 'password', 'mobile']
     arr.map((item) => {delete body[item]})
     const result = await User.updateOne({ _id:obj._id }, body)
-    if ( result.n === 1 && result.ok === 1 ) {
+    if ( result.n === 1 && result.ok === 1) {
       ctx.body = {
         code: 200,
         msg: msg === '' ? '更新成功' : msg
@@ -146,7 +153,7 @@ class UserController {
     } else {
       ctx.body = {
         code: 500,
-        msg: 更新失败
+        msg: '更新失败'
       }
     }
   }
@@ -377,6 +384,23 @@ class UserController {
       code: 200,
       msg: '新增用户成功',
       data: result
+    }
+  }
+
+  async getInfo (ctx) {
+    const params = ctx.query
+    const result = await User.findByID(params._id)
+    if (result) {
+      ctx.body = {
+        code: 200,
+        msg: '查询成功',
+        data: result
+      }
+    } else {
+      ctx.body = {
+        code: 400,
+        msg: '查询失败'
+      }
     }
   }
 }

@@ -20,5 +20,6 @@ router.get('/comments', commentsController.getComments)
 router.get('/getinfo', userController.getinfo)
 router.get('/getlabel', listController.getLabel)
 router.get('/getLabels', publicController.getLabels)
-
+router.get('/getAdvert', publicController.getAdvert)
+router.get('/getInfos', userController.getInfo)
 export default router

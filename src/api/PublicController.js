@@ -1,6 +1,7 @@
 import svgCaptcha from 'svg-captcha'
 import Label from '../model/label'
 import { setValue, getHValue, getValue } from '../config/RedisConfig'
+import Links from '../model/Links'
 
 class PublicController {
   constructor() {}
@@ -13,7 +14,9 @@ class PublicController {
       noise: Math.floor(Math.random() * 5),
       width: 150
     })
-    setValue(body.sid, newCaptca.text, 600)
+    if (body.sid) {
+      setValue(body.sid, newCaptca.text, 600)
+    }
     ctx.body = {
       code: 200,
       data: newCaptca.data,
@@ -25,6 +28,15 @@ class PublicController {
       code: 200,
       data: result,
       msg: '获取文章标签成功'
+    }
+  }
+
+  async getAdvert (ctx) {
+    const result = await Links.find({})
+    ctx.body = {
+      code: 200,
+      msg: '成功',
+      data: result
     }
   }
 }

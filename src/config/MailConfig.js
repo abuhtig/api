@@ -35,8 +35,8 @@ async function send(sendInfo) {
     subject:
       sendInfo.user !== '' && sendInfo.type !== 'email'
         ? `你好${sendInfo.user}！确认修改密码链接`
-        : '《Fly社区》确认修改邮箱链接', // Subject line
-    text: `您在《Fly社区》中注册，您的邀请码是${
+        : '《杰斯社区》确认修改邮箱链接', // Subject line
+    text: `您在《杰斯社区》中注册，您的邀请码是${
       sendInfo.code
     },邀请码的过期时间: ${sendInfo.expire}`, // plain text body
     html: `

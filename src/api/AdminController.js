@@ -7,6 +7,11 @@ import logs from '../model/errorRecord'
 import Sign from '../model/SignRecord'
 import {getMenuData, sortObj, getRights} from '../common/Utils'
 import dayjs from 'dayjs'
+import config from '../config'
+import mkdir from 'make-dir'
+import uuid from 'uuid/v4'
+import fs from 'fs'
+import Links from '../model/Links'
 let weekday = require('dayjs/plugin/weekday')
 dayjs.extend(weekday)
 class AdminController {
@@ -174,8 +179,8 @@ class AdminController {
 
   async getOperations (ctx) {
     const user = await User.findOne({ _id: ctx._id }, { roles: 1 })
-    const { role } = user
-    const rights = await Roles.findOne({ role }, { menu: 1 })
+    const { roles } = user
+    const rights = await Roles.findOne({ roles }, { menu: 1 })
     const menus = rights.menu
     const treeData = await Menu.find({})
     const routes = getRights(treeData, menus)
@@ -254,12 +259,49 @@ class AdminController {
   }
 
   async deleteLogs (ctx) {
-    const params = ctx.query
-    const result = await logs.deleteOne({ _id: params._id })
+    const { body } = ctx.request
+    const result = await logs.deleteMany({_id: { $in: body.ids }})
     ctx.body = {
       code: 200,
       data: result
     }
+  }
+
+  async uploadImg (ctx) {
+    const file = ctx.request.files.file
+    const ext = file.name.split('.').pop()
+    const dir = `${config.uploadPath}/advert`
+    await mkdir(dir)
+    const picname = uuid()
+    const destPath = `${dir}/${picname}.${ext}`
+    const reader = fs.createReadStream(file.path)
+    const upStream = fs.createWriteStream(destPath)
+    const filePath = `/advert/${picname}.${ext}`
+    reader.pipe(upStream)
+    ctx.body = {
+      code: 200,
+      msg: '上传成功!',
+      data: filePath
+    }
+  }
+
+  async uploadAdvert (ctx) {
+    const { body } = ctx.request
+    const link = new Links(body)
+    const result = await link.save()
+    ctx.body = {
+      code: 200,
+      msg: '上传更新成功',
+      data: result
+    }
+  }
+  async deleteAdvert (ctx) {
+    const { body } = ctx.request
+      const result = await Links.deleteMany({_id: { $in: body }})
+      ctx.body = {
+        code: 200,
+        data: result
+      }
   }
 }
 
