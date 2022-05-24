@@ -1,11 +1,11 @@
 import path from 'path'
-const DB_URL = 'mongodb://test:password@120.48.21.232:39875/testdb'
+const DB_URL = ''
 const REDIS = {
-  host: '120.48.21.232',
-  port: 6379,
-  password: '123456'
+  host: '',
+  port:  '',
+  password: ''
 }
-const JWT_SERCET = 'F&l8mWkDt$9a1lQBuaej9oJ2T35@u7ur69szx6smKJINzMbUYjHxiFd*1KxpJ8zH'
+const JWT_SERCET = ''
 
 const baseUrl = 'https://www.toped.top'
 
@@ -16,9 +16,9 @@ const adminEmail = ['378091429@qq.com']
 
 const publicPath = [/^\/public/, /\/login/,/^\/content/]
 
-const AppId = 'wx45c9da8b092c8330'
+const AppId = ''
 
-const AppSecret = '8dad43e742ce7fec101bb1df8651cd7c'
+const AppSecret = ''
 
 export default {
   DB_URL,
