@@ -16,7 +16,8 @@ const PostSchema = new Schema({
   isTop: { type: String, default: '0'  },
   sort: { type: String, default: 100  },
   tags: { type: Array, ref: 'label' },
-  pic: { type: String, default: ''}
+  pic: { type: String, default: ''},
+  likes: { type: Number, default: 0 },
 })
 
 PostSchema.pre('save', function (next) {

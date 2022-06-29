@@ -28,13 +28,13 @@ const httpsOption = {
 const server = https.createServer(httpsOption, app.callback())
 server.listen(444)
 
-const server2 = ''
+let server2 = ''
 if (!isDevMode) {
   const httpsOption2 = {
     key: fs.readFileSync(path.join(__dirname, './cert/7403365_www.toped.top.key'), 'utf8'),
     cert: fs.readFileSync(path.join(__dirname, './cert/7403365_www.toped.top.pem'), 'utf8')
   }
-  const server2 = https.createServer(
+  server2 = https.createServer(
     httpsOption2, 
     app.callback()
   ).listen(3001)

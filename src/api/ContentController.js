@@ -12,6 +12,7 @@ import { checkCode } from '../common/Utils'
 import collect from '../model/Collect'
 import qs from 'qs'
 import Records from '../model/records'
+import xss from 'xss'
 
 class ContentController {
   async getPostList (ctx) {
@@ -45,6 +46,51 @@ class ContentController {
       total: total
     }
   }
+	
+	async search(ctx) {
+		const body = ctx.query
+		const sort = body.sort ? body.sort : 'created'
+		const page = body.page ? parseInt(body.page) : 0
+		const limit = body.limit ? parseInt(body.limit) : 10
+		const options = {}
+		if (typeof body.search !== 'undefined' && body.search !== '') {
+		  // options['content'] = {$regex: new RegExp(body.search)}
+		  options['title'] = {$regex: new RegExp(body.search)}
+      const result = await Post.getList(options, sort, page, limit)
+			if (result.length < 1) {
+				ctx.body = {
+					code: 204,
+					msg: '获取文章列表失败',
+					total: 0
+				}
+				return
+			}
+			const str = `<span style='color: #f94d2a; margin: 0 2px'>${body.search}</span>`
+			const reg = new RegExp(body.search, "gi")
+			const data = result.map((item) => {
+			  item.content = item.content.replace(/<\/?.+?>/g, '')
+				item.content = item.content.replace(reg, str)
+				item.title = item.title.replace(reg, str)
+			  return item
+			})
+      const total = await Post.getListCount(options)
+      ctx.body = {
+        code: 200,
+        data: data,
+        msg: '获取文章列表成功',
+        total: total
+      }
+		} else {
+      ctx.body = {
+        code: 400,
+        data: [],
+        msg: '获取文章列表失败',
+        total: 0
+      }
+    }
+
+
+	}
   async getPostListadm (ctx) {
     const params = ctx.query
     let body = qs.parse(params)
@@ -169,6 +215,7 @@ class ContentController {
         return
       } else {
         const r = await User.updateOne({ _id: obj._id }, { $inc: { favs:-body.fav }})
+        body.content = xss(body.content)
         const newPost = new Post(body)
         newPost.uid = obj._id
         const result = await newPost.save()
@@ -251,6 +298,7 @@ class ContentController {
     const obj = await getJWTPayload(ctx.header.authorization)
     const post = await Post.findOne({ _id: body.tid })
     if (post.uid === obj._id && post.isEnd === '0') {
+      body.content = xss(body.content)
       const result = await Post.updateOne({ _id: body.tid }, body)
       if (result.ok === 1) {
         ctx.body = {
@@ -273,23 +321,23 @@ class ContentController {
     }
   }
 
-  async editPostbyId (ctx) {
-    const { body } = ctx.request
-    const result = await Post.updateOne({ _id: body._id }, body)
-    if (result.ok === 1, result.nModified === 1) {
-      ctx.body = {
-        code: 200,
-        data: result,
-        msg: '更新帖子成功'
-      }
-      } else {
-        ctx.body = {
-          code: 500,
-          data: result,
-          msg: '更新帖子失败'
-        }       
-      }
-  }
+  // async editPostbyId (ctx) {
+  //   const { body } = ctx.request
+  //   const result = await Post.updateOne({ _id: body._id }, body)
+  //   if (result.ok === 1, result.nModified === 1) {
+  //     ctx.body = {
+  //       code: 200,
+  //       data: result,
+  //       msg: '更新帖子成功'
+  //     }
+  //     } else {
+  //       ctx.body = {
+  //         code: 500,
+  //         data: result,
+  //         msg: '更新帖子失败'
+  //       }       
+  //     }
+  // }
 
   async getPostListByUid (ctx) {
     const params = ctx.query
@@ -511,6 +559,24 @@ class ContentController {
         code: 400,
         msg: '删除失败'
       }
+    }
+  }
+
+  async searchDefault (ctx) {
+    const result = await Post.aggregate([{ $sample: { size: 1 } }, {$project: {_id:1,title:1}}])
+    ctx.body = {
+      code: 200,
+      data: result[0],
+      msg: '查询成功'
+    }
+  }
+
+  async randomArticle (ctx) {
+    const result = await Post.aggregate([{ $sample: { size: 10 } }, {$project: {_id:1,title:1}}])
+    ctx.body = {
+      code: 200,
+      data: result,
+      msg: '查询成功'
     }
   }
 }

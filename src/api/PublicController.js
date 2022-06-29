@@ -2,6 +2,7 @@ import svgCaptcha from 'svg-captcha'
 import Label from '../model/label'
 import { setValue, getHValue, getValue } from '../config/RedisConfig'
 import Links from '../model/Links'
+import axios from 'axios'
 
 class PublicController {
   constructor() {}
@@ -37,6 +38,27 @@ class PublicController {
       code: 200,
       msg: '成功',
       data: result
+    }
+  }
+
+  async tmdb (ctx) {
+    const body = ctx.request.query
+    const str = encodeURI(body.query)
+    const obj = await axios.get('https://api.themoviedb.org/3/search/multi?api_key=b90928d70befc539d0d7949355b20714&language=zh&query=' + str)
+    const res = obj.data.results
+    ctx.body = {
+      data: res
+    }
+  }
+
+  async tmdbSimilar (ctx) {
+    const body = ctx.request.query
+    const str = encodeURI(body.query)
+    const obj = await axios.get(`https://api.themoviedb.org/3/movie/${str}/similar?api_key=b90928d70befc539d0d7949355b20714&language=zh`)
+    const res = obj.data.results.slice(0,6)
+    res.map((item) => item.overview = '')
+    ctx.body = {
+      data: res
     }
   }
 }
